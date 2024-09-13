@@ -1,0 +1,80 @@
+import csv, itertools
+from itertools import product
+
+class Tech(object):
+    var_list = ["mode", "volume", "dtype",  "veracity"]
+    def __init__(self, name, mode, vol, dtype, veracity):
+        self.name = name
+        self.mode = mode
+        self.vol = vol
+        self.dtype = dtype
+        self.ver = veracity
+        
+    def cases(self):
+        types = tech_obj.get_typeData()
+        modes = tech_obj.get_mode()
+        vols = tech_obj.get_volume()
+        vers = tech_obj.get_Quality()
+        
+        cases = list(product(modes, vols, types, vers, [tech_obj.name]))
+        return cases
+    
+    def get_mode(self):
+        mlist = []
+        _mode = {0b01: "Stream", 0b10: "Batch"}  # exclusive
+        for i in range(2):
+            bina = self.mode & (1 << i)
+            if bina in _mode:
+                mlist.append(_mode[bina])
+        return mlist     
+    
+    def get_volume(self):
+        vlist = []
+        _volume = {"inf1Tera": 1, "in1T1P": 2, "sup1Peta": 3}  # progressive
+        for _vol in _volume:
+            if self.vol >= _volume[_vol]:
+                vlist.append(_vol)
+        return vlist
+    
+    def get_typeData(self):
+        tlist = []
+        _dtype = {0b100: "UNS", 0b010: "SEMI", 0b001: "STRUC"}  # exclusive
+        for i in range(3):
+            bina = self.dtype & (1 << i)
+            if bina in _dtype:
+                tlist.append(_dtype[bina])
+        return tlist         
+     
+    def get_Quality(self):
+        vlist = []
+        _veracity = {"LossDup": 4, "LossData": 3, "DupData": 2,  "NoLossNoDup": 1}  # progressive
+        for _ver in _veracity:
+            if self.ver >= _veracity[_ver]:
+                vlist.append(_ver)
+        return vlist
+            
+fields = ["Acquisition_mode", "SizeData", "D_type", "Quality", "Technology"]
+tech_cases = [['HDFS', 0b11, 3, 0b111, 1],
+              ['Cassandra', 0b11, 3, 0b001, 1],
+              ['MongoDB', 0b11, 3, 0b110, 1],
+              ['Oracle', 0b11, 3, 0b11, 1],
+              ['Apache Hbase', 0b10, 3, 0b11, 4],
+              ['Apache CouchDB', 0b11, 3, 0b110, 2],
+              ['Neo4J', 0b11, 2, 0b110, 3],
+              ['ArangoDB', 0b10, 3, 0b111, 1],
+              ['OrientDB', 0b10, 3, 0b111, 1],
+              ['JanusGraph', 0b11, 3, 0b001, 1],
+              ['S3', 0b11, 3, 0b111, 1],
+              ['Azure Blob Storage', 0b11, 3, 0b111, 1],
+              ['Local File System', 0b11, 2, 0b111, 3]]
+
+cases_list = []
+for tech_case in tech_cases:
+    tech_obj = Tech(tech_case[0], tech_case[1], tech_case[2], tech_case[3], tech_case[4])
+    cases_list.append( tech_obj.cases())
+
+with open('baseRawStor.csv', 'w', newline='') as f:
+    write = csv.writer(f, delimiter=';')
+    write.writerow(fields)
+    for cases in cases_list:
+        write.writerows(cases)
