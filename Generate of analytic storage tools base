@@ -1,0 +1,114 @@
+import csv, itertools
+from itertools import product
+import pandas
+
+class Tech(object):
+    var_list = ["mode", "volume", "Latency", "variety", "dtype",  "Complexity"]
+    def __init__(self, name, mode, vol, lat, var, dtype, comp):
+        self.name = name
+        self.mode = mode
+        self.vol = vol
+        self.lat = lat
+        self.var = var
+        self.dtype = dtype
+        self.comp = comp
+        
+    def cases(self):
+        types = tech_obj.get_typeData()
+        modes = tech_obj.get_mode()
+        lats = tech_obj.get_Latency()
+        vols = tech_obj.get_volume()
+        var_ = tech_obj.get_NumberDS()
+        comps = tech_obj.get_Complexity()
+        
+        cases = list(product(modes, vols, lats, var_, types, comps, [tech_obj.name]))
+        return cases
+    
+    def get_mode(self):
+        mlist = []
+        _mode = {0b01: "Stream", 0b10: "Batch"}  # exclusive
+        for i in range(2):
+            bina = self.mode & (1 << i)
+            if bina in _mode:
+                mlist.append(_mode[bina])
+        return mlist     
+    
+    def get_volume(self):
+        vlist = []
+        _volume = {"inf1Tera": 1, "in1T1P": 2, "sup1Peta": 3}  # progressive
+        for _vol in _volume:
+            if self.vol >= _volume[_vol]:
+                vlist.append(_vol)
+        return vlist
+    
+    def get_Latency(self):
+        llist = []
+        _latency = {"inf5": 1, "in515": 2, "sup15": 3}  # progressive
+        for _lat in _latency:
+            if self.lat >= _latency[_lat]:
+                llist.append(_lat)
+        return llist
+    
+    def get_NumberDS(self):
+        vlist = []
+        _variety = {"inf5": 1, "sup5": 2}  # progressive
+        for _var in _variety:
+            if self.var >= _variety[_var]:
+                vlist.append(_var)
+        return vlist
+    
+    def get_typeData(self):
+        tlist = []
+        _dtype = {0b100: "UNS", 0b010: "SEMI", 0b001: "STRUC"}  # exclusive
+        for i in range(3):
+            bina = self.dtype & (1 << i)
+            if bina in _dtype:
+                tlist.append(_dtype[bina])
+        return tlist         
+     
+    def get_Complexity(self):
+        clist = []
+        _complexity = {"un": 1, "plusieurs": 2}  # progressive
+        for _comp in _complexity:
+            if self.comp >= _complexity[_comp]:
+                clist.append(_comp)
+        return clist        
+            
+fields = ["Acquisition_mode", "SizeData", "Latency", "Nb_DS", "D_type", "Complexity", "Technology"]
+tech_cases = [['Vertica', 0b11, 3, 1, 2, 0b11, 2],
+              ['Apache Druid', 0b11, 3, 1, 2, 0b11, 1],
+              ['HDFS', 0b11, 3, 2, 1, 0b111, 1],
+              ['MongoDB', 0b11, 3, 1, 1, 0b110, 2],
+              ['Oracle', 0b11, 3, 1, 1, 0b11, 2],
+              ['Apache HBase', 0b10, 3, 1, 1, 0b11, 2],
+              ['Apache CouchDB', 0b11, 3, 1, 1, 0b110, 2],
+              ['Apache Giraph', 0b10, 2, 2, 1, 0b001, 1],
+              ['Amazon  DynamoDB', 0b11, 3, 1, 1, 0b001, 1],
+              ['BerkeleyDB', 0b10, 1, 1, 1, 0b001, 1],
+              ['Elasticsearch', 0b11, 3, 1, 1, 0b110, 2],
+              ['OrientDB', 0b10, 3, 1, 1, 0b111, 2],
+              ['ScyllaDB', 0b11, 3, 1, 1, 0b11, 1],
+              ['ClickHouse', 0b10, 3, 1, 1, 0b11, 1],
+              ['Neo4J', 0b11, 2, 1, 1, 0b110, 1],
+              ['JanusGraph', 0b10, 3, 1, 1, 0b001, 1],
+              ['ArangoDB', 0b10, 3, 1, 1, 0b111, 2],
+              ['FlockDB', 0b10, 1, 1, 1, 0b001, 1],
+              ['Redis', 0b11, 1, 1, 1, 0b11, 2],
+              ['Riak', 0b11, 3, 1, 1, 0b001, 2],
+              ['S3', 0b11, 3, 1, 1, 0b111, 1],
+              ['Cassandra', 0b11, 3, 1, 1, 0b001, 2],
+              ['BigQuery', 0b11, 3, 1, 1, 0b111, 2]]
+
+cases_list = []
+for tech_case in tech_cases:
+    tech_obj = Tech(tech_case[0], tech_case[1], tech_case[2], tech_case[3], tech_case[4], tech_case[5], tech_case[6])
+    cases_list.append( tech_obj.cases())
+
+with open('BaseAnalStor.csv', 'w', newline='') as f:
+    write = csv.writer(f, delimiter=';')
+    write.writerow(fields)
+    for cases in cases_list:
+        write.writerows(cases)
+
+df = pandas.read_csv("BaseAnalStor.csv", sep=";", header = 0)
+print(df)
