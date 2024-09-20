@@ -1,5 +1,6 @@
 import csv, itertools
 from itertools import product
+import pandas
 
 class Tech(object):
     var_list = ["mode", "volume", "dtype",  "veracity"]
@@ -78,3 +79,10 @@ with open('baseRawStor.csv', 'w', newline='') as f:
     write.writerow(fields)
     for cases in cases_list:
         write.writerows(cases)
+
+df = pandas.read_csv("baseRawStor.csv", sep=";", header = 0)
+print(df)       
+
+
+
+
