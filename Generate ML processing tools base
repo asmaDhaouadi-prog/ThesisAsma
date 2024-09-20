@@ -1,0 +1,77 @@
+import csv, itertools
+import pandas
+from itertools import product
+
+class Tech(object):
+    var_list = ["mode", "volume", "Latency", "Complexity"]
+    def __init__(self, name, mode, vol, lat, comp):
+        self.name = name
+        self.mode = mode
+        self.vol = vol
+        self.lat = lat
+        self.comp = comp
+        
+    def cases(self):
+        modes = tech_obj.get_mode()
+        vols = tech_obj.get_volume()
+        lats = tech_obj.get_Latency()
+        comps = tech_obj.get_Complexity()
+        
+        cases = list(product(modes, vols, lats, comps, [tech_obj.name]))
+        return cases
+    
+    def get_mode(self):
+        mlist = []
+        _mode = {0b01: "Stream", 0b10: "Batch"}  # exclusive
+        for i in range(2):
+            bina = self.mode & (1 << i)
+            if bina in _mode:
+                mlist.append(_mode[bina])
+        return mlist     
+    
+    def get_volume(self):
+        vlist = []
+        _volume = {"inf1Tera": 1, "in1T1P": 2, "sup1Peta": 3}  # progressive
+        for _vol in _volume:
+            if self.vol >= _volume[_vol]:
+                vlist.append(_vol)
+        return vlist
+    
+    def get_Latency(self):
+        llist = []
+        _latency = {"inf5": 1, "in515": 2, "sup15": 3}  # progressive
+        for _lat in _latency:
+            if self.lat >= _latency[_lat]:
+                llist.append(_lat)
+        return llist
+    
+    def get_Complexity(self):
+        clist = []
+        _complexity = {"un": 1, "plusieurs": 2}  # progressive
+        for _comp in _complexity:
+            if self.comp >= _complexity[_comp]:
+                clist.append(_comp)
+        return clist        
+     
+            
+fields = ["proc_mode", "SizeData", "Latency", "Complexity", "Technology"]
+tech_cases = [['Map Reduce', 0b10, 3, 3, 2],
+              ['Spark', 0b11, 3, 1, 2],
+              ['Flink', 0b11, 3, 1, 1],
+              ['H2O', 0b10, 2, 2, 1],
+              ['R Studio', 0b10, 1, 2, 2],
+              ['Python', 0b10, 1, 3, 2],
+              ['Tensor Flow', 0b10, 2, 3, 1]]
+
+cases_list = []
+for tech_case in tech_cases:
+    tech_obj = Tech(tech_case[0], tech_case[1], tech_case[2], tech_case[3], tech_case[4])
+    cases_list.append( tech_obj.cases())
+
+with open('procMLTool.csv', 'w', newline='') as f:
+    write = csv.writer(f, delimiter=';')
+    write.writerow(fields)
+    for cases in cases_list:
+        write.writerows(cases)
+df = pandas.read_csv("procMLTool.csv", sep=";", header = 0)
+print(df)
