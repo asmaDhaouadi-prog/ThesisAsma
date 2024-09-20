@@ -1,0 +1,97 @@
+import csv, itertools
+from itertools import product
+import pandas
+
+class Tech(object):
+    var_list = ["mode", "volume", "velocity", "variety", "dtype",  "veracity"]
+    def __init__(self, name, mode, vol, vel, var, dtype, veracity):
+        self.name = name
+        self.mode = mode
+        self.vol = vol
+        self.vel = vel
+        self.var = var
+        self.dtype = dtype
+        self.ver = veracity
+        
+    def cases(self):
+        types = tech_obj.get_typeData()
+        modes = tech_obj.get_mode()
+        vels = tech_obj.get_TimeAcqui()
+        vols = tech_obj.get_volume()
+        var_ = tech_obj.get_NumberDS()
+        vers = tech_obj.get_Quality()
+        
+        cases = list(product(modes, vols, vels, var_, types, vers, [tech_obj.name]))
+        return cases
+    
+    def get_mode(self):
+        mlist = []
+        _mode = {0b01: "Stream", 0b10: "Batch"}  # exclusive
+        for i in range(2):
+            bina = self.mode & (1 << i)
+            if bina in _mode:
+                mlist.append(_mode[bina])
+        return mlist     
+    
+    def get_volume(self):
+        vlist = []
+        _volume = {"inf1Tera": 1, "in1T1P": 2, "sup1Peta": 3}  # progressive
+        for _vol in _volume:
+            if self.vol >= _volume[_vol]:
+                vlist.append(_vol)
+        return vlist
+    
+    def get_TimeAcqui(self):
+        vlist = []
+        _vels = {0b100: "Batch", 0b010: "NRT", 0b001: "RT"}  # exclusive
+        for i in range(3):
+            bina = self.vel & (1 << i)
+            if bina in _vels:
+                vlist.append(_vels[bina])
+        return vlist
+    
+    def get_NumberDS(self):
+        vlist = []
+        _variety = {"inf5": 1, "sup5": 2}  # progressive
+        for _var in _variety:
+            if self.var >= _variety[_var]:
+                vlist.append(_var)
+        return vlist
+    
+    def get_typeData(self):
+        tlist = []
+        _dtype = {0b100: "UNS", 0b010: "SEMI", 0b001: "STRUC"}  # exclusive
+        for i in range(3):
+            bina = self.dtype & (1 << i)
+            if bina in _dtype:
+                tlist.append(_dtype[bina])
+        return tlist         
+     
+    def get_Quality(self):
+        vlist = []
+        _veracity = {"LossDup": 4, "LossData": 3, "DupData": 2,  "NoLossNoDup": 1}  # progressive
+        for _ver in _veracity:
+            if self.ver >= _veracity[_ver]:
+                vlist.append(_ver)
+        return vlist
+            
+fields = ["Acquisition_mode", "SizeData", "PotentielTimeAqcui", "Nb_DS", "D_type", "Quality", "Technology"]
+tech_cases = [['Apache Kafka', 0b01, 3, 0b001, 2, 0b111, 1],
+              ['Apache Flume', 0b01, 3, 0b001, 2, 0b110, 3],
+              ['Apache NiFi', 0b11, 3, 0b101, 2, 0b111, 1],
+              ['Apache Sqoop', 0b11, 3, 0b110, 2, 0b001, 1],
+              ['Pentaho DI', 0b11, 2, 0b101, 2, 0b111, 1],
+              ['Talend', 0b11, 2, 0b101, 2, 0b111, 1]]
+
+cases_list = []
+for tech_case in tech_cases:
+    tech_obj = Tech(tech_case[0], tech_case[1], tech_case[2], tech_case[3], tech_case[4], tech_case[5], tech_case[6])
+    cases_list.append( tech_obj.cases())
+
+with open('BaseAcquisition.csv', 'w', newline='') as f:
+    write = csv.writer(f, delimiter=';')
+    write.writerow(fields)
+    for cases in cases_list:
+        write.writerows(cases)
+df = pandas.read_csv("BaseAcquisition.csv", sep=";", header = 0)
+print(df)
